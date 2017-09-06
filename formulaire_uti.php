@@ -17,26 +17,12 @@
 
 <label for="nom">Nom</label>
 <input type="text" name="nom" placeholder="Nom">
+<label for="age">Age</label>
+<input type="text" name="age" placeholder="age">
 <input type="submit" value="Rechercher">
 </form>
 
 <?php
-
-
- $prenom = $_GET['prenom'];
- $nom = $_GET['nom'];
- 
-//isset= Is Set = "si la variable a été 'rempli'"
-if(!isset ($_GET['prenom']) && ($_GET['nom'])) {
-echo 'formulaire non soumis';
-} else {
-    if  (($_GET['prenom'] == '' && $_GET['nom'] == '')) {
-echo 'formulaire soumis avec champ vide ou erreur';
-}else {
-    echo "formulaire soumis avec valeurs valides prenom et nom : ".htmlspecialchars($_GET['prenom'] && $_GET['nom']);
-}
-}
-
 try
 {
     //on se connecte à MySQL
@@ -48,13 +34,37 @@ catch (Exception $e)
     // En cas d'erreur, on affiche un message et on arrête tout
     die('Erreur : ' . $e->getMessage());
 }
-
 // Si tout va bien, on peut continuer
 
+$prenom = "";
+$nom = "";
+$age="";
+//isset= Is Set = "si la variable a été 'rempli'"
+if(!isset($_GET['prenom']) || !isset($_GET['nom'])) {
+    echo 'formulaire non soumis';
+} else {
+    $prenom = $_GET['prenom'];
+    $nom = $_GET['nom'];
+    $age=$_GET['age'];
+    
+    
+    if  (($_GET['prenom'] == '' && $_GET['nom'] == '')) {
+        echo 'formulaire soumis avec champ vide ou erreur';
+    }else {
+        echo "formulaire soumis avec valeurs valides prenom et nom : ".htmlspecialchars($_GET['prenom'] && $_GET['nom']);
+    }
+}
+//methode qui fonctionne mais que l'on remplace par 'sprintf' ---ligne du dessous $sql1
+// $req = $bdd->query("select * from uti_utilisateur where uti_prenom like '%$prenom%' and uti_nom like '%$nom%'");
 
-$req = $bdd->query("select * from uti_utilisateur where uti_prenom like '%$prenom%' and uti_nom like '%$nom'");
 
-// $req->execute(array($_GET['name=nom'], $_GET['name=prenom']));
+//le LIKE avec %% va chercher ds le input la lettre que l'on saisi, dans toute la table
+$sql=sprintf("select * from uti_utilisateur where uti_prenom like '%%%s%%' and uti_nom like '%%%s%%' and (uti_age = %d  or %d = 0)" ,$prenom, $nom, $age, $age);
+
+// $sql=sprintf("select * from uti_utilisateur where uti_nom = '%s' and uti_age = %d", $nom, $age);
+
+// $result = $bdd->query($sql);
+$result = $bdd->query($sql);
 
 ?>
 
@@ -64,57 +74,56 @@ $req = $bdd->query("select * from uti_utilisateur where uti_prenom like '%$preno
 
 <div class="container">
 <table class="table table-{1:striped|sm|bordered|hover|bg-fade} table-bg-fade">
-    <thead class="thead-bg-fade|thead-default">
-        <tr>
-            <th>ID UTILISATEUR</th>
-            <th>NOM</th>
-            <th>PRENOM</th>
-            <th>AGE</th>
-        </tr>
-        </thead>
-        <tbody>
+<thead class="thead-bg-fade|thead-default">
+<tr>
+<th>ID UTILISATEUR</th>
+<th>NOM</th>
+<th>PRENOM</th>
+<th>AGE</th>
+</tr>
+</thead>
+<tbody>
 
 <?php
 
 
-
-while ($donnees = $req->fetch())
+while ($donnees = $result->fetch())
 
 {
-?>
-<tr>
-         <td><?= $donnees['uti_oid'];?></td>
-         <td><?= $donnees['uti_nom']; ?></td>
-         <td><?= $donnees['uti_prenom']; ?></td>
-         <td><?= $donnees['uti_age']; ?></td>
-
-</tr>
-<?php   
+    ?>
+    <tr>
+    <td><?= $donnees['uti_oid'];?></td>
+    <td><?= $donnees['uti_nom']; ?></td>
+    <td><?= $donnees['uti_prenom']; ?></td>
+    <td><?= $donnees['uti_age']; ?></td>
+    
+    </tr>
+    <?php
 }
 
-$req->closeCursor();
+$result->closeCursor();
 
 
 
 ?>
-       </tbody>
+</tbody>
 </table>
 
 
 <?php
 
 // exemple de sprintf:
-$num = 5;
-$location = 'bananier';
+// $num = 5;
+// $location = 'bananier';
 
-$format = 'Il y a %d singes dans le %s';
-echo sprintf($format, $num, $location);
+// $format = 'Il y a %d singes dans le %s';
+// echo sprintf($format, $num, $location);
 ?>
 
 
 
 </div>
-</p>  
+</p>
 
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
